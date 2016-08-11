@@ -11,11 +11,14 @@ namespace Joe
         Dictionary<String, object> table;
         public Environment EnclosingEnvironment { get; set; }
 
+        public Guid ScopeID { get; set; }
+
         
 
         public Environment()
         {
             table = new Dictionary<string, object>();
+            ScopeID = Guid.NewGuid();
         }
 
         public object GetValue(String key)
@@ -32,6 +35,10 @@ namespace Joe
                 {
                     throw new VariableNotFoundException("Variable " + key + " could not be found.");
                 }
+            } else if (o.GetType() == typeof(PointerEntry))
+            {
+                var pointEntry = (PointerEntry)o;
+                return GetValueByScope(pointEntry.Key, pointEntry.Value);
             }
             else
             {
@@ -39,7 +46,36 @@ namespace Joe
             }
         }
 
-        public Entry GetEntry(String key)
+        private object GetValueByScope(String key, Guid scope)
+        {
+            if(this.ScopeID != scope)
+            {
+                if (EnclosingEnvironment == null)
+                {
+                    throw new ScopeNotFoundException();
+                }
+                else
+                {
+                    return EnclosingEnvironment.GetValueByScope(key, scope);
+                }
+            }
+            else
+            {
+                var val = GetValue(key);
+                if(val.GetType() == typeof(PointerEntry))
+                {
+                    var val2 = (PointerEntry)val;
+                    return GetValueByScope(val2.Key, scope);
+                }
+                else
+                {
+                    return val;
+                }
+            }
+        }
+
+        
+        private Entry GetEntry(String key)
         {
             Object o = null;
             var value = table.TryGetValue(key, out o);
@@ -60,7 +96,7 @@ namespace Joe
             }
         }
 
-        public object DeValue(Entry entry)
+        private object DeValue(Entry entry)
         {
             if( entry.Value.GetType() == typeof(Entry))
             {
@@ -96,17 +132,6 @@ namespace Joe
             }
         }
 
-        public void AddValue(String key, String type)
-        {
-            if (!table.ContainsKey(key))
-            {
-                table.Add(key, new Entry { Type = type, Value = null });
-            }
-            else
-            {
-                throw new VariableAlreadyExistsInScopeException("Variable " + key + " already exists.");
-            }
-        }
 
         public string GetType(String key)
         {
@@ -116,9 +141,19 @@ namespace Joe
 
         public void SetValue(String key, object value)
         {
+            
+            
             if (table.ContainsKey(key))
-            {  
+            {
+                if (table[key].GetType() == typeof(PointerEntry))
+                {
+                    var point = (PointerEntry)table[key];
+                    SetValueAtScope(point.Key, value, point.Value);
+                }
+                else
+                {
                     ((Entry)(table[key])).Value = value;
+                }
                 
             }
             else
@@ -133,6 +168,34 @@ namespace Joe
                 }
             }
         }
+
+        private void SetValueAtScope(String key, object value, Guid scopeID)
+        {
+             if (this.ScopeID == ScopeID)
+            {
+                SetValue(key, value);
+            }
+            else
+            {
+                if (EnclosingEnvironment != null)
+                {
+                    SetValueAtScope(key, value, scopeID);
+                }
+                else
+                {
+                    throw new ScopeNotFoundException();
+                }
+            }
+        }
+
+        public void SetPointer(String key, PointerEntry pointer)
+        {
+            if (table.ContainsKey(key))
+            {
+                table[key] = pointer;
+
+            }
+        }
     }
 
     public class Entry
@@ -145,5 +208,12 @@ namespace Joe
         public string Type { get; set; }
 
         public object Value { get; set; }
+    }
+
+    public class PointerEntry: Entry
+    {
+        public new Guid Value { get; set; } 
+
+        public string Key { get; set; }
     }
 }

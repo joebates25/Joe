@@ -155,12 +155,19 @@ namespace Joe
                 {
                     if (defArgs == null)
                         break;
-                    //if (!defArgs.PassByReference) {
-                    string argName = ((ASTIdent)defArgs.Identifier).Value;
-                    var argValue = translate(arguments.Identifier);
-                    this.environment.AddValueWithType(argName, ((ASTIdent)defArgs.Type).Value);
-                    this.environment.SetValue(argName, argValue);
-                    //}
+                    if (!defArgs.PassByReference)
+                    {
+                        string argName = ((ASTIdent)defArgs.Identifier).Value;
+                        var argValue = translate(arguments.Identifier);
+                        this.environment.AddValueWithType(argName, ((ASTIdent)defArgs.Type).Value);
+                        this.environment.SetValue(argName, argValue);
+                    }
+                    else
+                    {
+                        string argName = ((ASTIdent)defArgs.Identifier).Value;
+                        this.environment.AddValueWithType(argName, ((ASTIdent)defArgs.Type).Value);
+                        this.environment.SetPointer(argName, new PointerEntry { Value = this.environment.EnclosingEnvironment.ScopeID, Key = ((ASTIdent)arguments.Identifier).Value });
+                    }
                     defArgs = defArgs.Arguments;
                     arguments = arguments.Argslist;
 
@@ -225,7 +232,7 @@ namespace Joe
             {
                 var result = translate(statementList.Statement);
                 if (result != null)
-                {                                                                             
+                {
                     return result;
                 }
                 if (statementList.FunctionBody != null)
