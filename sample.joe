@@ -1,0 +1,12 @@
+func test:int(x:int){
+	IF x > 10 
+	THEN
+		ret "great";
+	ELSE
+		ret "less";
+	END;	
+};
+
+let y:int = test(11);
+print("HEllo World" + tostring(y));
+print(test(11));

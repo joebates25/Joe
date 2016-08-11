@@ -1,0 +1,192 @@
+IDENT:
+	\w+
+
+DIGIT:
+	\d+
+
+OP:
+	+
+	-
+	*
+	/
+	%
+	^^
+
+LOOPEXP:
+	LOOP EXP BEGIN LOOPBODY END
+	
+LOOPBODY:
+	STATEMENT
+	STATEMENT LOOPBODY
+
+	
+	
+EXPRESSION
+	IDENT 
+	DIGIT
+	FUNCTIONCALL 
+	TERM OP 
+	STRINGLIT
+	(Expression)
+
+FUNCTIONCALL:
+	IDENT( ARGSLIST
+
+ARGSLIST:
+	)
+	EXPRESSION, ARGSLIST
+
+
+ASSIGN
+	IDENT = EXPRESSION
+
+
+STATEMENT:
+	EXPRESSION;
+	ASSIGN;
+	VARDEF;
+	IF
+
+IF:
+	IF exp THEN expList (ELSE expList) END
+	
+
+VARDEF:
+	let IDENT:IDENT = EXPRESSION
+
+
+OPCALL:
+	STATEMENT
+	STATEMENT OP OPCALL
+
+
+STATEMENTLIST:
+	STATEMENT;
+	STATEMENTLIST; STATEMENT;
+
+
+FUNCTIONDEF:
+	func IDENT:IDENT (ARGSDEFLIST) {STATEMENTLIST}
+
+ARGSDEFLIST:
+	)
+	IDENT:IDENT)
+	IDENT:IDENT, ARGSDEFLIST
+
+
+ARGSLIST:
+	IDENT
+	ARGSLIST, IDENT
+
+
+RETCALL:
+	ret STATEMENT
+
+ASSIGN:
+	IDENT = STATEMENT
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@Dumb double function@
+func double:int(x:int){
+	ret x * 2;	
+};
+
+@Power function@
+func pow:int(num:int, power:int){
+	let total:int = 0;
+	let index:int = 0;
+	LOOP index < power BEGIN
+		num = num * num;
+		index = index + 1;
+	END;
+
+	ret num; 	
+};
+
+	@Takes p,q returns p + q@
+func concat:h(p:int, q:string){
+	let retString:string = p + q;
+	ret p+q;	
+};
+
+@Requires firstName lastName to exist
+
+-Doesn't work any more..
+@
+func concatName:string(){
+	let retValue:string = firstName + lastName;
+	ret retValue;	
+};
+
+
+@stupid function@
+func hello:int (x:int, y:int){
+	let yy:int = 6;
+	yy = x * y;
+	ret yy;
+};
+
+@now the real work begins@
+let result:int = pow(10,2);
+let hey:func = hello;
+let x:int = hey(3, 100);
+x = x * 4;
+let firstName:string = "Joseph ";
+let lastName:string = "Bates";
+let fullName:string = firstName + lastName;
+let a:string = "";
+a = firstName + lastName;
+let carry:string = concatName();
+carry = carry + carry + carry;
+print(result)
