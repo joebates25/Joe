@@ -156,6 +156,13 @@ namespace Joe
         public ASTArgsList Argslist { get; set; }
     }
 
+    public class ASTSubscript : ASTNode
+    {
+        public ASTNode Identifier { get; set; }
+
+        public ASTNode Subscript { get; set; }
+    }
+
     public class ASTFunctionCall : ASTNode
     {
         public ASTNode Identifier { get; set; }

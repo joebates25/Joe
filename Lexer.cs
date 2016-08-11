@@ -102,14 +102,14 @@ namespace Joe
                         tokens.Add(new Token("{", TokenType.LBRACK, LineNumber));
                         advanceStream(fileStream);
                     }
-                    else if (((char)currentChar).Equals('['))
-                    {
-                        tokens.Add(new Token("]", TokenType.LSBRACK, LineNumber));
-                        advanceStream(fileStream);
-                    }
                     else if (((char)currentChar).Equals(']'))
                     {
-                        tokens.Add(new Token("[", TokenType.RSBRACK, LineNumber));
+                        tokens.Add(new Token("]", TokenType.RSBRACK, LineNumber));
+                        advanceStream(fileStream);
+                    }
+                    else if (((char)currentChar).Equals('['))
+                    {
+                        tokens.Add(new Token("[", TokenType.LSBRACK, LineNumber));
                         advanceStream(fileStream);
                     }
                     else if (((char)currentChar).Equals(':'))
