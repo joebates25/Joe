@@ -144,7 +144,7 @@ namespace Joe
         }
 
 
-        private Entry GetEntry(String key)
+        public Entry GetEntry(String key)
         {
             Object o = null;
             var value = table.TryGetValue(key, out o);

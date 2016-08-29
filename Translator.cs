@@ -198,6 +198,7 @@ namespace Joe
             }
             else
             {
+                MethodSignature ms = new MethodSignature(statement, environment);        
                 ASTFunctionDef function = (ASTFunctionDef)this.environment.GetValue(((ASTIdent)statement.Identifier).Value);
                 var functionEnvironment = new Environment();
                 functionEnvironment.EnclosingEnvironment = environment;
@@ -388,6 +389,7 @@ namespace Joe
         {
             environment.AddValueWithType(statement.Identifier.Value, "func");
             environment.SetValue(statement.Identifier.Value, statement);
+            MethodSignature signature = new MethodSignature(statement);
             return null;
         }
 

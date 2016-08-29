@@ -99,6 +99,7 @@
     <Compile Include="CharacterUnknownException.cs" />
     <Compile Include="Environment.cs" />
     <Compile Include="Lexer.cs" />
+    <Compile Include="MethodSignature.cs" />
     <Compile Include="MismatchedTypesException.cs" />
     <Compile Include="ParseException.cs" />
     <Compile Include="Parser.cs" />

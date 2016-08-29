@@ -1,11 +1,26 @@
 
+
 let d:int = 6;
+let name:string = "hello world";
 let power:arr = {5};
+asn power = [1,2,3,4];
 
 
-func neg:null(value:int){
+
+heyyy(d, 7, {8}, name, "Hello", power);
+
+
+
+
+func neg:null(**value:int, fun:arr){
 	ret 0 - value;
 }
+
+func take:null(value:arr){
+	memdump();
+}
+
+take([1,2,3,4,5]);
 
 func pneg:null(**value:int){
 	asn value = 0 - value;
