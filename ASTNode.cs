@@ -134,6 +134,8 @@ namespace Joe
 
         public bool PassByReference { get; set; }
 
+        public ASTNode DefaultValue { get; set; }
+
         public ASTArgsDefList Arguments { get; set; }
     }
 
@@ -150,6 +152,16 @@ namespace Joe
         public ASTNode StatementList { get; set; }
     }
 
+    public class ASTArgumentPlaceHolder : ASTNode
+    {
+
+    }
+
+    public class ASTSwigNode : ASTNode
+    {
+
+    }
+
     public class ASTArgsList : ASTNode
     {
         public ASTNode Identifier { get; set; }
@@ -161,6 +173,23 @@ namespace Joe
         public ASTNode Identifier { get; set; }
 
         public ASTNode Subscript { get; set; }
+    }
+
+    public class ASTNull : ASTNode
+    {
+
+    }
+
+    public class ASTArrayLen : ASTNode
+    {
+        public ASTNode Length { get; set; }
+    }
+
+    public class ASTArray : ASTNode
+    {
+        public ASTNode Value { get; set; }
+
+        public ASTArray Array { get; set; }
     }
 
     public class ASTFunctionCall : ASTNode
@@ -191,6 +220,18 @@ namespace Joe
         {
             this.Value = value;
         }
+        public ASTDigit() { }
         public int Value { get; set; }
+                                           
+    }
+
+    public class ASTFloat : ASTDigit
+    {
+        public ASTFloat(double value)
+        {
+            this.Value = value;
+        }
+
+        public new double Value { get;  set; }
     }
 }

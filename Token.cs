@@ -105,7 +105,7 @@ namespace Joe
         RBRACK,
         PLUS,
         MINUS,
-        MULT,
+        STAR,
         DIV,
         MOD,
         COMPEQUALS,
@@ -124,6 +124,10 @@ namespace Joe
         AND,
         OR,
         XOR,
-        REF
+        REF,
+        NULL,
+        ASSIGN,
+        SWIG,
+        FLOAT
     }
 }

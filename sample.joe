@@ -1,12 +1,66 @@
-func test:int(x:int){
-	IF x > 10 
-	THEN
-		ret "great";
-	ELSE
-		ret "less";
-	END;	
-};
 
-let y:int = test(11);
-print("HEllo World" + tostring(y));
-print(test(11));
+let d:int = 6;
+let power:arr = {5};
+
+
+func neg:null(value:int){
+	ret 0 - value;
+}
+
+func pneg:null(**value:int){
+	asn value = 0 - value;
+}
+
+let x:int = 10;
+let y:int = 20;
+
+print(neg(x));
+print(x);
+pneg(y);
+print(y);
+
+
+
+
+@
+func hello:null(x:int=50^^power, **y:int=200){
+	print(tostring(x));
+	print(tostring(y));
+	IF x > 10 THEN
+		print("GREATER!");
+	END
+}
+
+func neg:null(value:int){
+	ret 0 - value;
+}
+
+func pneg:null(**value:int){
+	asn value = 0 - value;
+}
+
+
+func run:null(mine:int, **yours:string){
+	let xx:int = 99;
+}
+
+func substring:string(input:string, start:int, en:int, **point:int){
+	let retValue:string = "";
+	let index:int = start;
+	run(6, point);
+	LOOP index < en BEGIN
+		asn retValue = retValue + input[index];
+		asn index = index + 1;
+	END
+	ret retValue;
+}
+
+func hey:null(){
+		print("Hey World");
+}
+
+func hello:null(){
+	print("Hello World");
+}
+
+asn hey = hello;@

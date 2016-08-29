@@ -28,10 +28,22 @@ namespace Joe
             return tree;
         }
 
+        private void eat(TokenType type)
+        {
+            if((int)tokenStream.Current.Type!=(int)type)
+            {
+                throw new Exception(String.Format("Expected token of type  {0}  but instead got   {1}", type, tokenStream.Current.Type));
+            }
+            else
+            {
+                tokenStream.NextToken();
+            }
+        }
+
         private ASTNode ParseStatement()
         {
             var nextToken = tokenStream.Peek();
-            if (nextToken.Type == TokenType.EQUALS)
+            if (tokenStream.Current.Type == TokenType.ASSIGN)
             {
                 ASTNode assignNode = parseAssign();
                 return assignNode;
@@ -45,21 +57,22 @@ namespace Joe
             else if (tokenStream.Current.Type == TokenType.FUNC)
             {
                 ASTNode node = parseFunctionDef();
-                eatSemiColon();
+                //eatSemiColon();
                 return node;
             }
             else if (tokenStream.Current.Type == TokenType.IF)
             {
                 ASTNode node = parseIfStatement();
-                eatSemiColon();
+                //eatSemiColon();
                 return node;
             }
             else if (tokenStream.Current.Type == TokenType.LOOP)
             {
                 ASTNode node = parseLoop();
-                eatSemiColon();
+                //eatSemiColon();
                 return node;
-            }
+            } 
+            
             else if (tokenStream.Current.Type == TokenType.RET)
             {
                 ASTReturnCall node = parseReturnExpression();
@@ -216,7 +229,13 @@ namespace Joe
 
                 node.Type = new ASTIdent(tokenStream.NextToken().Value);
                 tokenStream.NextToken();
+                if (tokenStream.Current.Type == TokenType.EQUALS)
+                {
+                    tokenStream.NextToken();
+                    node.DefaultValue = parseExpression();
+                }
                 node.Arguments = null;
+
                 if (tokenStream.Current.Type == TokenType.COMMA)
                 {
                     node.Arguments = parseDefArgs();
@@ -228,10 +247,10 @@ namespace Joe
         private ASTNode parseAssign()
         {
             ASTAssignNode assignNode = new ASTAssignNode();
+            tokenStream.NextToken();
             var identToken = tokenStream.Current;
-            assignNode.Identifier = new ASTIdent(identToken.Value);
-            tokenStream.NextToken();
-            tokenStream.NextToken();
+            assignNode.Identifier = parseExpression();
+            tokenStream.NextToken(); 
             assignNode.Value = parseExpression();
             tokenStream.NextToken();
             return assignNode;
@@ -255,18 +274,28 @@ namespace Joe
         private ASTNode parseExpression()
         {
             var nextToken = tokenStream.Peek();
-            if (nextToken.Type == TokenType.LPAREN)
+            var prevToken = tokenStream.Current;
+            if (tokenStream.Current.Type == TokenType.LBRACK)
+            {
+                tokenStream.NextToken();
+                return parseArrayLenDec();
+            }
+            else if (tokenStream.Current.Type == TokenType.LSBRACK)
+            {
+                return parseArrayDec();
+            }
+            else if (nextToken.Type == TokenType.LPAREN)
             {
                 return parseFunctionCall();
             }
             else if (nextToken.Type == TokenType.LSBRACK)
             {
-                var node = parseExp();    
+                var node = parseExp();
                 tokenStream.NextToken();
-                var sub =  parseSubscript();
+                var sub = parseSubscript();
                 return new ASTSubscript { Identifier = node, Subscript = sub };
             }
-            else if (nextToken.Type == TokenType.PLUS || nextToken.Type == TokenType.MINUS || nextToken.Type == TokenType.MULT || nextToken.Type == TokenType.DIV || nextToken.Type == TokenType.MOD || nextToken.Type == TokenType.POW)   // is operator 
+            else if (nextToken.Type == TokenType.PLUS || nextToken.Type == TokenType.MINUS || nextToken.Type == TokenType.STAR || nextToken.Type == TokenType.DIV || nextToken.Type == TokenType.MOD || nextToken.Type == TokenType.POW)   // is operator 
             {
                 var node1 = parseExp();
                 var operand = parseOp();
@@ -276,8 +305,8 @@ namespace Joe
             else if (nextToken.Type == TokenType.LT || nextToken.Type == TokenType.GT || nextToken.Type == TokenType.COMPEQUALS || nextToken.Type == TokenType.NOTEQUALS || nextToken.Type == TokenType.AND || nextToken.Type == TokenType.OR || nextToken.Type == TokenType.XOR)
             {
                 var node1 = parseExp();
-                var operand = parseOp();
-                var node2 = parseExpression();
+                var operand = parseOp();   
+                var node2 = parseExp();
                 return new ASTCompOp { Op1 = node1, OP2 = node2, Operator = operand };
             }
             else
@@ -286,6 +315,35 @@ namespace Joe
                 return node;
             }
             throw new NotImplementedException();
+        }
+
+        private ASTArray parseArrayDec()
+        {
+            tokenStream.NextToken();       
+            ASTArray array = new ASTArray();
+            var node = parseExpression();
+            array.Value = node;
+            if (tokenStream.Current.Type == TokenType.COMMA)
+            {
+                array.Array = parseArrayDec();
+            }
+            else
+            {
+                array.Array = null;
+                tokenStream.NextToken();
+            }
+
+            return array;
+
+        }
+
+        private ASTNode parseArrayLenDec()
+        {
+            var result = parseExpression();
+            ASTArrayLen node = new ASTArrayLen();
+            node.Length = result;
+            tokenStream.NextToken();
+            return node;
         }
 
         private ASTNode parseSubscript()
@@ -306,7 +364,7 @@ namespace Joe
             {
                 node.Operator = "-";
             }
-            else if (tokenStream.Current.Type == TokenType.MULT)
+            else if (tokenStream.Current.Type == TokenType.STAR)
             {
                 node.Operator = "*";
             }
@@ -359,25 +417,36 @@ namespace Joe
             var token = tokenStream.Current;
             switch (token.Type)
             {
+
                 case TokenType.IDENTIFIER:
-                    if (tokenStream.Peek().Type != TokenType.LPAREN)
+                    if (tokenStream.Peek().Type == TokenType.LPAREN)
+                    {
+                        return parseFunctionCall();
+                    }
+                    else
                     {
                         var node = new ASTIdent(token.Value);
                         tokenStream.NextToken();
                         return node;
                     }
-                    else
-                    {
-                        return parseFunctionCall();
-                    }
+                case TokenType.STAR:
+                    tokenStream.NextToken();
+                    return new ASTArgumentPlaceHolder();   
                 case TokenType.INTEGER:
                     var node2 = new ASTDigit(Int32.Parse(token.Value));
+                    tokenStream.NextToken();
+                    return node2;
+                case TokenType.FLOAT:
+                    node2 = new ASTFloat(double.Parse(token.Value));
                     tokenStream.NextToken();
                     return node2;
                 case TokenType.STRING:
                     var node3 = new ASTString(token.Value);
                     tokenStream.NextToken();
                     return node3;
+                case TokenType.NULL:
+                    tokenStream.NextToken();
+                    return new ASTNull();
                 case TokenType.TRUE:
                 case TokenType.FALSE:
                     var node4 = new ASTBool(Boolean.Parse(token.Value));
@@ -386,6 +455,16 @@ namespace Joe
                 default:
                     throw new Exception();
             }
+        }
+
+        private ASTNode parseArrayLen()
+        {
+            throw new NotImplementedException();
+        }
+
+        private ASTNode parseIdent()
+        {
+            throw new NotImplementedException();
         }
 
         private void eatSemiColon()
@@ -415,6 +494,13 @@ namespace Joe
             if (tokenStream.Current.Type == TokenType.RPAREN)
             {
                 return null;
+            }
+            else if (tokenStream.Current.Type == TokenType.SWIG)
+            {
+                ASTArgsList args = new ASTArgsList();
+                args.Identifier = new ASTSwigNode();      
+                args.Argslist = (ASTArgsList)parseArgs();
+                return args;
             }
             else
             {

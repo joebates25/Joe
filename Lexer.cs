@@ -132,13 +132,22 @@ namespace Joe
                          advanceStream(fileStream);
                         if ((char)fileStream.Peek() == '*')
                         {
-                            tokens.Add(new Token("**", TokenType.REF, LineNumber));
                             advanceStream(fileStream);
+                            if ((char)fileStream.Peek() == '*')
+                            {
+                                tokens.Add(new Token("***", TokenType.SWIG, LineNumber));
+                                advanceStream(fileStream);  
+                            }
+                            else
+                            {
+                                tokens.Add(new Token("**", TokenType.REF, LineNumber));
+                                //advanceStream(fileStream);
+                            }
                         }
                         else
                         {
-                            tokens.Add(new Token("*", TokenType.MULT, LineNumber));
-                            advanceStream(fileStream);
+                            tokens.Add(new Token("*", TokenType.STAR, LineNumber));
+                            //advanceStream(fileStream);
                         }
                     }
                     else if (((char)currentChar).Equals('/'))
@@ -172,7 +181,7 @@ namespace Joe
                         else
                         {
                             tokens.Add(new Token("^", TokenType.XOR, LineNumber));
-                            advanceStream(fileStream);
+                            //advanceStream(fileStream);
                         }
                     }
                     else if (((char)currentChar).Equals('<'))
@@ -227,12 +236,32 @@ namespace Joe
 
         private Token lexDigit(StreamReader stream)
         {
+            TokenType type = TokenType.INTEGER;
             List<char> buffer = new List<char>();
-            while (Char.IsDigit((char)stream.Peek()))
+            while (Char.IsDigit((char)stream.Peek()) || ((char)stream.Peek()).ToString().Equals("."))
             {
-                buffer.Add(advanceStream(stream));
+                if (((char)stream.Peek()).ToString().Equals("."))
+                {
+                    if (type != TokenType.FLOAT)
+                    {
+                        type = TokenType.FLOAT; 
+                        buffer.Add(advanceStream(stream));
+                    }
+                    else
+                    {
+                        throw new UnknownDigitException();
+                    }
+                }
+                else
+                {
+                    buffer.Add(advanceStream(stream));
+                }
             }
-            return new Token((new string(buffer.ToArray())), TokenType.INTEGER, LineNumber);
+            if (buffer != null && buffer.Last().ToString().Equals("."))
+            {
+                throw new UnknownDigitException();
+            }
+            return new Token((new string(buffer.ToArray())), type, LineNumber);
         }
 
         public Token lexIdent(StreamReader stream)
@@ -291,13 +320,21 @@ namespace Joe
             {
                 return new Token("and", TokenType.AND, LineNumber);
             }
-            else if (value.Equals("or"))
+            else if (value.Equals("assign") || value.Equals("asn"))
+            {
+                return new Token("assign", TokenType.ASSIGN, LineNumber);
+            }
+            else if (value.Equals("assign"))
             {
                 return new Token("or", TokenType.OR, LineNumber);
             }
             else if (value.Equals("xor"))
             {
                 return new Token("xor", TokenType.XOR, LineNumber);
+            }
+            else if (value.Equals("null"))
+            {
+                return new Token("null", TokenType.NULL, LineNumber);
             }
             else
             {
