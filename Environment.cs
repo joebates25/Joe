@@ -8,7 +8,7 @@ namespace Joe
 {
     public class Environment
     {
-        Dictionary<String, object> table;
+        Dictionary<object, object> table;
         public Environment EnclosingEnvironment { get; set; }
 
         public Guid ScopeID { get; set; }
@@ -17,7 +17,7 @@ namespace Joe
 
         public Environment()
         {
-            table = new Dictionary<string, object>();
+            table = new Dictionary<object, object>();
             ScopeID = Guid.NewGuid();
         }
 

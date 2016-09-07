@@ -199,7 +199,7 @@ namespace Joe
             else
             {
                 MethodSignature ms = new MethodSignature(statement, environment);        
-                ASTFunctionDef function = (ASTFunctionDef)this.environment.GetValue(((ASTIdent)statement.Identifier).Value);
+                ASTFunctionDef function = (ASTFunctionDef)this.environment.GetValue(ms.ToString());
                 var functionEnvironment = new Environment();
                 functionEnvironment.EnclosingEnvironment = environment;
                 this.environment = functionEnvironment;
@@ -387,9 +387,9 @@ namespace Joe
 
         private object transFuncDef(ASTFunctionDef statement)
         {
-            environment.AddValueWithType(statement.Identifier.Value, "func");
-            environment.SetValue(statement.Identifier.Value, statement);
             MethodSignature signature = new MethodSignature(statement);
+            environment.AddValueWithType(signature.ToString(), "func");
+            environment.SetValue(signature.ToString(), statement);
             return null;
         }
 

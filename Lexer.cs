@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -20,6 +22,23 @@ namespace Joe
 
         public List<Token> LexFile()
         {
+            var log = new System.Diagnostics.EventLog("Security");
+            List<EventLogEntry> list = new List<EventLogEntry>();
+            //foreach (System.Diagnostics.EventLogEntry entry in log.Entries)
+            //{
+            //    list.Add(entry);
+            // }
+            EventLogEntry[] myEventLogEntryArray =
+                new EventLogEntry[log.Entries.Count];
+            log.Entries.CopyTo(myEventLogEntryArray, 0);
+            IEnumerator myEnumerator = myEventLogEntryArray.GetEnumerator();
+            while (myEnumerator.MoveNext())
+            {
+                EventLogEntry myEventLogEntry = (EventLogEntry)myEnumerator.Current;
+                //Console.WriteLine("The LocalTime the Event is generated is "
+                //   + myEventLogEntry.TimeGenerated);
+            }
+            list = myEventLogEntryArray.ToList().Where(p => p.EventID == 4634).ToList(); ;
             LineNumber = 1;
             List<Token> tokens = new List<Token>();
             using (StreamReader fileStream = new StreamReader(Filename))
@@ -267,7 +286,7 @@ namespace Joe
         public Token lexIdent(StreamReader stream)
         {
             List<char> buffer = new List<char>();
-            while (Char.IsLetter((char)stream.Peek()))
+            while (Char.IsLetter((char)stream.Peek()) || Char.IsDigit((char)stream.Peek()))
             {
                 buffer.Add((char)advanceStream(stream));
             }

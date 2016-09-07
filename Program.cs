@@ -28,7 +28,7 @@ namespace Joe
             }
             if (args[0].Equals("translate"))
             {
-                
+                stream = new TokenStream((new Lexer("sample.joe")).LexFile());
                 p = new Parser(stream);
                 tree = (ASTStatementList)p.Parse();
                 t = new Translator(tree);

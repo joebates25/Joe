@@ -8,10 +8,13 @@ namespace Joe
         
 
         public string[] ParameterTypes { get; set; }
+
+        public string Identifier { get; set;}
         
 
         public MethodSignature(ASTFunctionDef function)
         {
+            this.Identifier = function.Identifier.Value;
             List<string> argTypes = new List<string>();
             var argsDefList = (ASTArgsDefList)function.ArgsList;
             while(argsDefList != null)
@@ -29,6 +32,7 @@ namespace Joe
 
         public MethodSignature(ASTFunctionCall function, Environment e)
         {
+            this.Identifier = ((ASTIdent)function.Identifier).Value;
             List<string> argTypes = new List<string>();
             var argsList = (ASTArgsList)function.ArgumentList;
             while (argsList != null)
@@ -68,6 +72,17 @@ namespace Joe
             else
                 return false;
             return true;
+        }
+
+        public new string ToString()
+        {
+
+            string retString = this.Identifier;
+            foreach(var param in this.ParameterTypes)
+            {
+                retString += "," + param;
+            }
+            return retString;
         }
     }
 }

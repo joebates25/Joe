@@ -1,18 +1,21 @@
 
 
-let d:int = 6;
-let name:string = "hello world";
-let power:arr = {5};
-asn power = [1,2,3,4];
+
+func ov2:null(value:int){
+	print("Int passed");
+}
+
+func ov2:null(value:string){
+	print("Int passed");
+}
+
+
+ov2("Hello");
+ov2(2);
 
 
 
-heyyy(d, 7, {8}, name, "Hello", power);
-
-
-
-
-func neg:null(**value:int, fun:arr){
+func neg:null(value:int){
 	ret 0 - value;
 }
 
@@ -20,24 +23,23 @@ func take:null(value:arr){
 	memdump();
 }
 
-take([1,2,3,4,5]);
+
 
 func pneg:null(**value:int){
 	asn value = 0 - value;
 }
-
+@
 let x:int = 10;
 let y:int = 20;
 
-print(neg(x));
+neg(20);
 print(x);
-pneg(y);
 print(y);
 
 
 
 
-@
+
 func hello:null(x:int=50^^power, **y:int=200){
 	print(tostring(x));
 	print(tostring(y));
