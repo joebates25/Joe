@@ -62,6 +62,32 @@ namespace Joe
         public ASTNode ElseBody { get; set; }
     }
 
+    public class ASTComposite : ASTNode
+    {
+        public ASTNode LeftOp { get; set; }
+
+        public ASTNode RightOp { get; set; }
+    }
+
+    public class ASTClassDef : ASTNode
+    {
+
+        public ASTIdent Identifier { get; set; }
+        public ASTClassDefList Items { get; set; }
+    }
+
+    public class ASTObjectDec: ASTNode
+    {
+        public ASTIdent ClassName { get; set; }
+    }
+
+    public class ASTClassDefList
+    {
+        public ASTNode Statement { get; set; }
+
+        public ASTClassDefList List { get; set; }
+    }
+
     public class ASTStatement : ASTNode
     {
         public List<ASTNode> statementNodes { get; set; }

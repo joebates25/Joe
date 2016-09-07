@@ -11,32 +11,41 @@ namespace Joe
     {
         static void Main(string[] args)
         {
+            String content = "";
             Parser p;
-            ASTStatementList tree;    
+            ASTStatementList tree;
             TokenStream stream;
             Translator t;
-            stream = new TokenStream((new Lexer("sample.joe")).LexFile());
+            if (content.Equals(""))
+            {
+                stream = new TokenStream((new Lexer()).LexFile("sample.joe"));
+            }
+            else
+            {
+                stream = new TokenStream((new Lexer()).LexString(content));
+            }
+
             if (args[0].Equals("token"))
             {
-                
+
             }
             if (args[0].Equals("tree"))
             {
-                
+
                 p = new Parser(stream);
                 tree = (ASTStatementList)p.Parse();
             }
             if (args[0].Equals("translate"))
             {
-                stream = new TokenStream((new Lexer("sample.joe")).LexFile());
+                stream = new TokenStream((new Lexer()).LexFile("sample.joe"));
                 p = new Parser(stream);
                 tree = (ASTStatementList)p.Parse();
                 t = new Translator(tree);
                 t.Translate();
             }
 
-            Console.WriteLine("Done Processing.................");                                                                                                                            
-            Console.ReadLine();             
+            Console.WriteLine("Done Processing.................");
+            Console.ReadLine();
         }
     }
 }

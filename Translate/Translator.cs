@@ -10,6 +10,7 @@ namespace Joe
         public ASTNode CurrentStatement { get; set; }
 
         List<String> BUILT_IN_FUNCTIONS = new List<String> { "print", "tostring", "input", "pinput", "toint", "len", "memdump" };
+        List<String> BUILT_IN_TYPES = new List<string> { "int", "float", "string", "func", "arr", "null" };
 
         public Translator(ASTStatementList tree)
         {
@@ -100,10 +101,32 @@ namespace Joe
             {
                 return transSub((ASTSubscript)statement);
             }
+            else if (statement.GetType() == typeof(ASTComposite))
+            {
+                return transComposite((ASTComposite)statement);
+            }
+            else if (statement.GetType() == typeof(ASTClassDef))
+            {
+                return transClassDef((ASTClassDef)statement);
+            }
             else
             {
                 return null;
             }
+        }
+
+        private object transComposite(ASTNode statement)
+        {
+            var firstValue = translate(((ASTComposite)statement).LeftOp);
+            var secondValue = translate(((ASTComposite)statement).RightOp);
+            return firstValue.ToString() + "." + secondValue.ToString();
+        }
+
+        private object transClassDef(ASTClassDef statement)
+        {
+            this.environment.AddValueWithType(statement.Identifier.Value, "class");
+            this.environment.SetValue(statement.Identifier.Value, statement.Items);
+            return 0;
         }
 
         private object transSub(ASTSubscript statement)
@@ -198,7 +221,7 @@ namespace Joe
             }
             else
             {
-                MethodSignature ms = new MethodSignature(statement, environment);        
+                MethodSignature ms = new MethodSignature(statement, environment);
                 ASTFunctionDef function = (ASTFunctionDef)this.environment.GetValue(ms.ToString());
                 var functionEnvironment = new Environment();
                 functionEnvironment.EnclosingEnvironment = environment;
@@ -218,7 +241,7 @@ namespace Joe
                         throw new Exception("Referenced parameters cannot have a default value.");
                     }
                     if (!defArgs.PassByReference)
-                    {     
+                    {
 
                         if (arguments.Identifier.GetType() == typeof(ASTArgumentPlaceHolder))
                         {
@@ -295,7 +318,7 @@ namespace Joe
             {
                 ASTArgsList defArgs = (ASTArgsList)statement.ArgumentList;
                 var translatedValue = translate(defArgs.Identifier);
-                if(translatedValue.GetType() == typeof(object[]))
+                if (translatedValue.GetType() == typeof(object[]))
                 {
                     return ((object[])translatedValue).Length;
                 }
@@ -371,6 +394,10 @@ namespace Joe
                 int index = (int)translate(subNode.Subscript);
                 environment.SetValue(((ASTIdent)subNode.Identifier).Value, translate(statement.Value), index);
             }
+            else if (statement.Identifier.GetType() == typeof(ASTComposite))
+            {
+                environment.SetValue(transComposite(statement.Identifier).ToString(), translate(statement.Value));
+            }
             else
             {
                 environment.SetValue(((ASTIdent)statement.Identifier).Value, translate(statement.Value));
@@ -380,8 +407,41 @@ namespace Joe
 
         private object transVarDef(ASTVarDef statement)
         {
-            environment.AddValueWithType(((ASTIdent)statement.VarName).Value, ((ASTIdent)statement.VarType).Value);
-            environment.SetValue(((ASTIdent)statement.VarName).Value, translate(statement.Value));
+            if (statement.Value.GetType() == typeof(ASTObjectDec))
+            {
+                return transObjectDec(statement);
+            }
+            else
+            {
+                environment.AddValueWithType(((ASTIdent)statement.VarName).Value, ((ASTIdent)statement.VarType).Value);
+                environment.SetValue(((ASTIdent)statement.VarName).Value, translate(statement.Value));
+                return null;
+            }
+        }
+
+        private object transObjectDec(ASTVarDef statement)
+        {
+            var objectName = ((ASTIdent)statement.VarName).Value;
+            var className = ((ASTObjectDec)statement.Value).ClassName.Value;
+            ASTClassDefList classDec = (ASTClassDefList)this.environment.GetValue(className);
+            while (classDec != null && classDec.Statement != null)
+            {
+                if (classDec.Statement.GetType() == typeof(ASTFunctionDef))
+                {
+                    var functionDef = (ASTFunctionDef)classDec.Statement;
+                    var fullName = objectName + "." + functionDef.Identifier.Value;
+                    this.environment.AddValueWithType(fullName, "func");
+                    this.environment.SetValue(fullName, functionDef);
+                }
+                else if (classDec.Statement.GetType() == typeof(ASTVarDef))
+                {
+                    var varDef = (ASTVarDef)classDec.Statement;
+                    var fullName = objectName + "." + ((ASTIdent)varDef.VarName).Value;
+                    this.environment.AddValueWithType(fullName, ((ASTIdent)varDef.VarType).Value);
+                    this.environment.SetValue(fullName, translate(varDef.Value));
+                }
+                classDec = classDec.List;
+            }
             return null;
         }
 
@@ -408,10 +468,10 @@ namespace Joe
                     throw new MismatchedTypesException("Can only add together 2 strings");
                 }
             }
-            else 
+            else
             {
                 if (translatedOp1.GetType() == typeof(int))
-                {       
+                {
                     if (((ASTOpExp)statement.Operator).Operator.Equals("+"))
                     {
                         return (int)translatedOp1 + Convert.ToInt32(translatedOp2);
@@ -437,7 +497,8 @@ namespace Joe
                         return (int)translatedOp1 % Convert.ToInt32(translatedOp2);
                     }
                     else throw new Exception();
-                } else if (translatedOp1.GetType() == typeof(double))
+                }
+                else if (translatedOp1.GetType() == typeof(double))
                 {
                     if (((ASTOpExp)statement.Operator).Operator.Equals("+"))
                     {
@@ -457,19 +518,19 @@ namespace Joe
                     }
                     else if (((ASTOpExp)statement.Operator).Operator.Equals("^^"))
                     {
-                        return (double)Math.Pow((double)translatedOp1, Convert.ToDouble(translatedOp2)); 
+                        return (double)Math.Pow((double)translatedOp1, Convert.ToDouble(translatedOp2));
                     }
                     else if (((ASTOpExp)statement.Operator).Operator.Equals("%"))
                     {
-                        return (double)translatedOp1 % Convert.ToDouble(translatedOp2); 
+                        return (double)translatedOp1 % Convert.ToDouble(translatedOp2);
                     }
                     else throw new Exception();
                 }
                 throw new MismatchedTypesException();
             }
-            
-                throw new MismatchedTypesException();
-            
+
+            throw new MismatchedTypesException();
+
         }
 
         private bool transCompOp(ASTCompOp statement)

@@ -12,37 +12,33 @@ namespace Joe
     class Lexer
     {
 
-        public string Filename { get; set; }
+        
 
         public int LineNumber = 1;
-        public Lexer(string fileName)
+        public Lexer()
         {
-            this.Filename = fileName;
+            
         }
 
-        public List<Token> LexFile()
+        public List<Token> LexString(String filename)
         {
-            var log = new System.Diagnostics.EventLog("Security");
-            List<EventLogEntry> list = new List<EventLogEntry>();
-            //foreach (System.Diagnostics.EventLogEntry entry in log.Entries)
-            //{
-            //    list.Add(entry);
-            // }
-            EventLogEntry[] myEventLogEntryArray =
-                new EventLogEntry[log.Entries.Count];
-            log.Entries.CopyTo(myEventLogEntryArray, 0);
-            IEnumerator myEnumerator = myEventLogEntryArray.GetEnumerator();
-            while (myEnumerator.MoveNext())
-            {
-                EventLogEntry myEventLogEntry = (EventLogEntry)myEnumerator.Current;
-                //Console.WriteLine("The LocalTime the Event is generated is "
-                //   + myEventLogEntry.TimeGenerated);
-            }
-            list = myEventLogEntryArray.ToList().Where(p => p.EventID == 4634).ToList(); ;
-            LineNumber = 1;
+            byte[] byteArray = Encoding.UTF8.GetBytes(filename);    
+            return Lex(new StreamReader(new MemoryStream(byteArray)));
+        }
+
+        public List<Token> LexFile(String filename)
+        {
+            StreamReader stream = new StreamReader(filename);
+            return Lex(stream);
+        }
+
+        private List<Token> Lex(StreamReader stream)
+        {
             List<Token> tokens = new List<Token>();
-            using (StreamReader fileStream = new StreamReader(Filename))
-            {
+            var fileStream = stream;
+            using (fileStream)
+            {  
+                LineNumber = 1;
 
                 char currentChar;
                 while (!fileStream.EndOfStream)
@@ -64,7 +60,8 @@ namespace Joe
                     else if (((char)currentChar).Equals('='))
                     {
                         advanceStream(fileStream);
-                        if ((char)fileStream.Peek() == '=') {
+                        if ((char)fileStream.Peek() == '=')
+                        {
                             tokens.Add(new Token("==", TokenType.COMPEQUALS, LineNumber));
                             advanceStream(fileStream);
                         }
@@ -89,6 +86,11 @@ namespace Joe
                     else if (((char)currentChar).Equals(':'))
                     {
                         tokens.Add(new Token(":", TokenType.COLON, LineNumber));
+                        advanceStream(fileStream);
+                    }
+                    else if (((char)currentChar).Equals('.'))
+                    {
+                        tokens.Add(new Token(".", TokenType.DOT, LineNumber));
                         advanceStream(fileStream);
                     }
                     else if (((char)currentChar).Equals('('))
@@ -148,14 +150,14 @@ namespace Joe
                     }
                     else if (((char)currentChar).Equals('*'))
                     {
-                         advanceStream(fileStream);
+                        advanceStream(fileStream);
                         if ((char)fileStream.Peek() == '*')
                         {
                             advanceStream(fileStream);
                             if ((char)fileStream.Peek() == '*')
                             {
                                 tokens.Add(new Token("***", TokenType.SWIG, LineNumber));
-                                advanceStream(fileStream);  
+                                advanceStream(fileStream);
                             }
                             else
                             {
@@ -190,7 +192,7 @@ namespace Joe
                         advanceStream(fileStream);
                     }
                     else if (((char)currentChar).Equals('^'))
-                    {    
+                    {
                         advanceStream(fileStream);
                         if ((char)fileStream.Peek() == '^')
                         {
@@ -212,7 +214,7 @@ namespace Joe
                     {
                         tokens.Add(new Token(">", TokenType.GT, LineNumber));
                         advanceStream(fileStream);
-                    }     
+                    }
                     else if (((char)currentChar).Equals('@'))
                     {
                         var character = '.';
@@ -220,12 +222,12 @@ namespace Joe
                         while (character != '@')
                         {
                             character = (char)advanceStream(fileStream);
-                        }                   
+                        }
                     }
                     else
                     {
                         advanceStream(fileStream);
-                    }                  
+                    }
                 }
             }
             return tokens;
@@ -234,7 +236,7 @@ namespace Joe
         private char advanceStream(StreamReader fileStream)
         {
             char readCharacter = (char)fileStream.Read();
-            if(readCharacter == '\n')
+            if (readCharacter == '\n')
             {
                 LineNumber++;
             }
@@ -263,7 +265,7 @@ namespace Joe
                 {
                     if (type != TokenType.FLOAT)
                     {
-                        type = TokenType.FLOAT; 
+                        type = TokenType.FLOAT;
                         buffer.Add(advanceStream(stream));
                     }
                     else
@@ -283,7 +285,7 @@ namespace Joe
             return new Token((new string(buffer.ToArray())), type, LineNumber);
         }
 
-        public Token lexIdent(StreamReader stream)
+        private Token lexIdent(StreamReader stream)
         {
             List<char> buffer = new List<char>();
             while (Char.IsLetter((char)stream.Peek()) || Char.IsDigit((char)stream.Peek()))
@@ -350,6 +352,14 @@ namespace Joe
             else if (value.Equals("xor"))
             {
                 return new Token("xor", TokenType.XOR, LineNumber);
+            }
+            else if (value.Equals("class"))
+            {
+                return new Token("class", TokenType.CLASS, LineNumber);
+            }
+            else if (value.Equals("new"))
+            {
+                return new Token("new", TokenType.NEW, LineNumber);
             }
             else if (value.Equals("null"))
             {

@@ -46,11 +46,11 @@ namespace Joe
                     String valueType = typeEnvironment.GetValue(valueIdent.Value).ToString();
                     if (!identType.Equals(valueType))
                     {
-                        throw new MismatchedTypesException();   
+                        throw new MismatchedTypesException();
                     }
                 }
                 else if (varAssign.Value.GetType() == typeof(ASTDigit))
-                {                                                       
+                {
                     String identType = typeEnvironment.GetValue(variableName).ToString();
                     String valueType = "int";
                     if (!identType.Equals(valueType))
@@ -59,7 +59,7 @@ namespace Joe
                     }
                 }
                 else if (varAssign.Value.GetType() == typeof(ASTString))
-                {                                                     
+                {
                     String identType = typeEnvironment.GetValue(variableName).ToString();
                     String valueType = "string";
                     if (!identType.Equals(valueType))
@@ -67,8 +67,13 @@ namespace Joe
                         throw new MismatchedTypesException();
                     }
                 }
-                }
             }
-
         }
+
+        private string type(ASTFunctionDef node)
+        {
+            return ((ASTIdent)node.Type).Value;
+        }
+
     }
+}

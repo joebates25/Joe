@@ -24,9 +24,7 @@ namespace Joe
         public override string ToString()
         {
             return "Token Value: " + Value + "   Token Type: " + Type.ToString() + "  Line Number: " + LineNumber.ToString(); 
-        }
-
-
+        }         
     }
 
     class TokenStream
@@ -128,6 +126,9 @@ namespace Joe
         NULL,
         ASSIGN,
         SWIG,
-        FLOAT
+        FLOAT,
+        DOT,
+        CLASS,
+        NEW
     }
 }

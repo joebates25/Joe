@@ -1,34 +1,36 @@
 
+class Dog{
+	let age:int = 7;
+	let name:string = "Fluffy";
 
+	func bark:null(num:int=3){
+		let idx:int = 0;
+		LOOP idx < num BEGIN
+			print("Bark");
+			asn idx = idx + 1;
+		END
+	}
 
-func ov2:null(value:int){
-	print("Int passed");
+	func humanYears:int(){
+		ret age * 7;
+	}
+
 }
 
-func ov2:null(value:string){
-	print("Int passed");
-}
-
-
-ov2("Hello");
-ov2(2);
-
-
-
-func neg:null(value:int){
-	ret 0 - value;
-}
-
-func take:null(value:arr){
-	memdump();
-}
-
-
-
-func pneg:null(**value:int){
-	asn value = 0 - value;
-}
+let pet:Dog = new Dog;
+asn pet.age = 10;
+print(pet.age);
 @
+
+
+
+
+let pet:Dog = new Dog;
+pet.bark();
+
+
+
+
 let x:int = 10;
 let y:int = 20;
 
@@ -51,6 +53,11 @@ func hello:null(x:int=50^^power, **y:int=200){
 func neg:null(value:int){
 	ret 0 - value;
 }
+
+
+let pet:obj = new Dog;
+
+
 
 func pneg:null(**value:int){
 	asn value = 0 - value;

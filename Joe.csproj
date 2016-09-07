@@ -98,23 +98,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ASTNode.cs" />
-    <Compile Include="CharacterUnknownException.cs" />
-    <Compile Include="Environment.cs" />
-    <Compile Include="Lexer.cs" />
-    <Compile Include="MethodSignature.cs" />
-    <Compile Include="MismatchedTypesException.cs" />
-    <Compile Include="ParseException.cs" />
-    <Compile Include="Parser.cs" />
+    <Compile Include="Parse\ASTNode.cs" />
+    <Compile Include="Exceptions\CharacterUnknownException.cs" />
+    <Compile Include="Translate\Environment.cs" />
+    <Compile Include="Lexer\Lexer.cs" />
+    <Compile Include="Translate\MethodSignature.cs" />
+    <Compile Include="Exceptions\MismatchedTypesException.cs" />
+    <Compile Include="Exceptions\ParseException.cs" />
+    <Compile Include="Parse\Parser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScopeNotFoundException.cs" />
-    <Compile Include="Token.cs" />
-    <Compile Include="Translator.cs" />
+    <Compile Include="Exceptions\ScopeNotFoundException.cs" />
+    <Compile Include="Lexer\Token.cs" />
+    <Compile Include="Translate\Translator.cs" />
     <Compile Include="TypeChecker.cs" />
-    <Compile Include="UnknownDigitException.cs" />
-    <Compile Include="VariableAlreadyExistsInScopeException.cs" />
-    <Compile Include="VariableNotFoundException.cs" />
+    <Compile Include="Exceptions\UnknownDigitException.cs" />
+    <Compile Include="Exceptions\VariableAlreadyExistsInScopeException.cs" />
+    <Compile Include="Exceptions\VariableNotFoundException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
