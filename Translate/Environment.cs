@@ -217,7 +217,7 @@ namespace Joe
                 if (table[key].GetType() == typeof(PointerEntry))
                 {
                     var point = (PointerEntry)table[key];
-                    SetValueAtScope(point.Key, value, point.Value);
+                    SetValue(point.Key, value, point.Value);
                 }
                 else
                 {
@@ -247,7 +247,7 @@ namespace Joe
                 if (table[key].GetType() == typeof(PointerEntry))
                 {
                     var point = (PointerEntry)table[key];
-                    SetValueAtScope(point.Key, value, point.Value);
+                    SetValue(point.Key, value, point.Value);
                 }
                 else
                 {
@@ -268,7 +268,7 @@ namespace Joe
             }
         }
 
-        private void SetValueAtScope(String key, object value, Guid scopeID)
+        public void SetValue(String key, object value, Guid scopeID)
         {
             if (this.ScopeID == ScopeID)
             {
@@ -278,7 +278,7 @@ namespace Joe
             {
                 if (EnclosingEnvironment != null)
                 {
-                    SetValueAtScope(key, value, scopeID);
+                    SetValue(key, value, scopeID);
                 }
                 else
                 {
@@ -287,7 +287,7 @@ namespace Joe
             }
         }
 
-        public void SetPointer(String key, PointerEntry pointer)
+        public void SetValue(String key, PointerEntry pointer)
         {
             if (table.ContainsKey(key))
             {
@@ -338,5 +338,13 @@ namespace Joe
                 return "null" + ":" + Type;
             }
         }
+    }
+
+    public class ObjectEntry:Dictionary<string, object>{
+
+        public ObjectEntry(string type){
+            Type = type;
+        }
+        public string Type {get;set;}
     }
 }

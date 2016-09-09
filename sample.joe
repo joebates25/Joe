@@ -1,90 +1,59 @@
-
 class Dog{
-	let age:int = 7;
-	let name:string = "Fluffy";
+    let age:int = 3;
+	let calls:int = 0;
 
-	func bark:null(num:int=3){
-		let idx:int = 0;
-		LOOP idx < num BEGIN
-			print("Bark");
-			asn idx = idx + 1;
+
+	func bark:null(){
+		print("Roof!");
+		asn calls = calls + 1;
+	}
+	
+	func set:null (prop:string, val:int){
+		IF prop == "age" THEN
+			asn age = val;
 		END
 	}
 
-	func humanYears:int(){
-		ret age * 7;
-	}
+	
+	func command:int(command:string, **result:int){
+		IF command == "sit" THEN
+			asn result = 1;
+		ELSE
+			asn result = 0;
+		END
+	}	
+	
 
 }
 
 let pet:Dog = new Dog;
-asn pet.age = 10;
-print(pet.age);
-@
 
+print("Age before: " + pet.age);
+pet.set("age", 10);
+print("Age after: " + pet.age);
 
-
-
-let pet:Dog = new Dog;
+pet.bark();
+pet.bark();
 pet.bark();
 
+print(pet.calls);
 
+let commands:arr = ["run", "sit", "stand"];
+let index:int = len(commands);
 
+LOOP index != 0 BEGIN
+	let cmd:string = pinput("Enter a command: ");
+	let res:int = 100;
+	pet.command(cmd, res);
+	print(res);
+	asn index = index - 1;
+END
 
-let x:int = 10;
-let y:int = 20;
-
-neg(20);
-print(x);
-print(y);
-
-
-
-
-
-func hello:null(x:int=50^^power, **y:int=200){
-	print(tostring(x));
-	print(tostring(y));
-	IF x > 10 THEN
-		print("GREATER!");
-	END
-}
-
-func neg:null(value:int){
-	ret 0 - value;
-}
-
-
-let pet:obj = new Dog;
-
-
-
-func pneg:null(**value:int){
-	asn value = 0 - value;
-}
-
-
-func run:null(mine:int, **yours:string){
-	let xx:int = 99;
-}
-
-func substring:string(input:string, start:int, en:int, **point:int){
-	let retValue:string = "";
-	let index:int = start;
-	run(6, point);
-	LOOP index < en BEGIN
-		asn retValue = retValue + input[index];
-		asn index = index + 1;
-	END
-	ret retValue;
-}
-
-func hey:null(){
-		print("Hey World");
-}
-
+@
 func hello:null(){
-	print("Hello World");
+	let dd:Dog = new Dog;
+    ret dd;
 }
 
-asn hey = hello;@
+print(hello().y);
+@

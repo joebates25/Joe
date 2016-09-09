@@ -15,7 +15,7 @@ namespace Joe
             Parser p;
             ASTStatementList tree;
             TokenStream stream;
-            Translator t;
+            Translator Translator;
             if (content.Equals(""))
             {
                 stream = new TokenStream((new Lexer()).LexFile("sample.joe"));
@@ -40,11 +40,11 @@ namespace Joe
                 stream = new TokenStream((new Lexer()).LexFile("sample.joe"));
                 p = new Parser(stream);
                 tree = (ASTStatementList)p.Parse();
-                t = new Translator(tree);
-                t.Translate();
+                Translator = new Translator(tree);
+                Translator.Translate();
             }
 
-            Console.WriteLine("Done Processing.................");
+            ; Console.WriteLine("Done Processing.................");
             Console.ReadLine();
         }
     }

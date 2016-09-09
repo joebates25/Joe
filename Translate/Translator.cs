@@ -5,22 +5,22 @@ namespace Joe
 {
     internal class Translator
     {
-        private ASTStatementList tree;
-        public Environment environment;
+        private ASTStatementList StatementTree;
+        public Environment Environment;
         public ASTNode CurrentStatement { get; set; }
 
         List<String> BUILT_IN_FUNCTIONS = new List<String> { "print", "tostring", "input", "pinput", "toint", "len", "memdump" };
-        List<String> BUILT_IN_TYPES = new List<string> { "int", "float", "string", "func", "arr", "null" };
+        List<String> BUILT_IN_TYPES = new List<string> { "int", "float", "string", "func", "arr", "null", "set" };
 
         public Translator(ASTStatementList tree)
         {
-            this.tree = tree;
-            environment = new Environment();
+            this.StatementTree = tree;
+            Environment = new Environment();
         }
 
         internal void Translate()
         {
-            foreach (ASTNode statement in tree.statementList)
+            foreach (ASTNode statement in StatementTree.statementList)
             {
                 this.CurrentStatement = statement;
                 var r = translate(statement);
@@ -43,7 +43,7 @@ namespace Joe
             }
             else if (statement.GetType() == typeof(ASTIdent))
             {
-                return environment.GetValue(((ASTIdent)statement).Value);
+                return Environment.GetValue(((ASTIdent)statement).Value);
             }
             else if (statement.GetType() == typeof(ASTBinOP))
             {
@@ -117,15 +117,32 @@ namespace Joe
 
         private object transComposite(ASTNode statement)
         {
-            var firstValue = translate(((ASTComposite)statement).LeftOp);
+            ObjectEntry firstObject = (ObjectEntry)translate(((ASTComposite)statement).LeftOp);
+            Environment newEnvironment = new Environment();
+            newEnvironment.EnclosingEnvironment = this.Environment;
+            this.Environment = newEnvironment;
+            foreach (var key in firstObject.Keys)
+            {
+                Entry entry = (Entry)firstObject[key];
+                this.Environment.AddValueWithType(key, entry.Type);
+                this.Environment.SetValue(key, entry.Value);
+            }
             var secondValue = translate(((ASTComposite)statement).RightOp);
-            return firstValue.ToString() + "." + secondValue.ToString();
+            Guid enclosingScope = this.Environment.EnclosingEnvironment.ScopeID;
+            var newEntry = new ObjectEntry(firstObject.Type);
+            foreach (var nextKey in firstObject.Keys)
+            {
+                newEntry[nextKey] = new Entry { Type = ((Entry)firstObject[nextKey]).Type, Value = this.Environment.GetValue(nextKey)};
+            }
+            this.Environment.SetValue(firstObject.Type, newEntry);
+            this.Environment = this.Environment.EnclosingEnvironment;
+            return secondValue;
         }
 
         private object transClassDef(ASTClassDef statement)
         {
-            this.environment.AddValueWithType(statement.Identifier.Value, "class");
-            this.environment.SetValue(statement.Identifier.Value, statement.Items);
+            this.Environment.AddValueWithType(statement.Identifier.Value, "class");
+            this.Environment.SetValue(statement.Identifier.Value, statement.Items);
             return 0;
         }
 
@@ -139,7 +156,7 @@ namespace Joe
             }
             else
             {
-                return (environment.GetValue(((ASTIdent)statement.Identifier).Value, index));
+                return (Environment.GetValue(((ASTIdent)statement.Identifier).Value, index));
             }
         }
 
@@ -180,8 +197,8 @@ namespace Joe
         private object transIfBody(ASTIfBody thenBody)
         {
             var ifEnvironment = new Environment();
-            ifEnvironment.EnclosingEnvironment = this.environment;
-            this.environment = ifEnvironment;
+            ifEnvironment.EnclosingEnvironment = this.Environment;
+            this.Environment = ifEnvironment;
             var result = translate(thenBody.Statement);
             if (result != null)           //TODO: Look at
             {
@@ -191,7 +208,7 @@ namespace Joe
             {
                 return transIfBody(thenBody.FunctionBody);
             }
-            this.environment = ifEnvironment.EnclosingEnvironment;
+            this.Environment = ifEnvironment.EnclosingEnvironment;
             return null;
         }
 
@@ -202,11 +219,11 @@ namespace Joe
             while (expResult)
             {
                 var loopEnvironment = new Environment();
-                loopEnvironment.EnclosingEnvironment = this.environment;
-                this.environment = loopEnvironment;
+                loopEnvironment.EnclosingEnvironment = this.Environment;
+                this.Environment = loopEnvironment;
                 result = transLoopBody((ASTLoopBody)statement.StatementList);
                 expResult = (bool)translate(statement.CompExpression);
-                this.environment = environment.EnclosingEnvironment;
+                this.Environment = Environment.EnclosingEnvironment;
             }
             return result;
         }
@@ -221,11 +238,11 @@ namespace Joe
             }
             else
             {
-                MethodSignature ms = new MethodSignature(statement, environment);
-                ASTFunctionDef function = (ASTFunctionDef)this.environment.GetValue(ms.ToString());
+                MethodSignature ms = new MethodSignature(statement, Environment);
+                ASTFunctionDef function = (ASTFunctionDef)this.Environment.GetValue(ms.ToString());
                 var functionEnvironment = new Environment();
-                functionEnvironment.EnclosingEnvironment = environment;
-                this.environment = functionEnvironment;
+                functionEnvironment.EnclosingEnvironment = Environment;
+                this.Environment = functionEnvironment;
                 /*
                  * Add function arguments to environment
                  */
@@ -247,22 +264,22 @@ namespace Joe
                         {
                             string argName = ((ASTIdent)defArgs.Identifier).Value;
                             var argValue = translate(defArgs.DefaultValue);
-                            this.environment.AddValueWithType(argName, ((ASTIdent)defArgs.Type).Value);
-                            this.environment.SetValue(argName, argValue);
+                            this.Environment.AddValueWithType(argName, ((ASTIdent)defArgs.Type).Value);
+                            this.Environment.SetValue(argName, argValue);
                         }
                         else
                         {
                             string argName = ((ASTIdent)defArgs.Identifier).Value;
                             var argValue = translate(arguments.Identifier);
-                            this.environment.AddValueWithType(argName, ((ASTIdent)defArgs.Type).Value);
-                            this.environment.SetValue(argName, argValue);
+                            this.Environment.AddValueWithType(argName, ((ASTIdent)defArgs.Type).Value);
+                            this.Environment.SetValue(argName, argValue);
                         }
                     }
                     else
                     {
                         string argName = ((ASTIdent)defArgs.Identifier).Value;
-                        this.environment.AddValueWithType(argName, ((ASTIdent)defArgs.Type).Value);
-                        this.environment.SetPointer(argName, new PointerEntry { Value = this.environment.EnclosingEnvironment.ScopeID, Key = ((ASTIdent)arguments.Identifier).Value });
+                        this.Environment.AddValueWithType(argName, ((ASTIdent)defArgs.Type).Value);
+                        this.Environment.SetValue(argName, new PointerEntry { Value = this.Environment.EnclosingEnvironment.ScopeID, Key = ((ASTIdent)arguments.Identifier).Value });
                     }
                     defArgs = defArgs.Arguments;
                     arguments = arguments.Argslist;
@@ -270,10 +287,17 @@ namespace Joe
                 }
 
                 var returnResult = transFunctionBody((ASTFunctionBody)function.StatementList);
-                this.environment = environment.EnclosingEnvironment;
+                this.Environment = Environment.EnclosingEnvironment;
 
                 return returnResult;
             }
+        }
+
+        private object transClassMethod(ASTNode node)
+        {
+            //first load new environment and provide object values
+            //then run method, as normal, unload values
+            return null;
         }
 
         private object transBuiltInFunction(ASTFunctionCall statement)
@@ -312,7 +336,7 @@ namespace Joe
             else if (identifer.Equals("memdump"))
             {
                 Console.Out.WriteLine("~~~~BEGIN MEM DUMP~~~~");
-                this.environment.MemDump();
+                this.Environment.MemDump();
             }
             else if (identifer.Equals("len"))
             {
@@ -392,15 +416,15 @@ namespace Joe
 
                 var subNode = (ASTSubscript)statement.Identifier;
                 int index = (int)translate(subNode.Subscript);
-                environment.SetValue(((ASTIdent)subNode.Identifier).Value, translate(statement.Value), index);
+                Environment.SetValue(((ASTIdent)subNode.Identifier).Value, translate(statement.Value), index);
             }
             else if (statement.Identifier.GetType() == typeof(ASTComposite))
             {
-                environment.SetValue(transComposite(statement.Identifier).ToString(), translate(statement.Value));
+                Environment.SetValue(transComposite(statement.Identifier).ToString(), translate(statement.Value));
             }
             else
             {
-                environment.SetValue(((ASTIdent)statement.Identifier).Value, translate(statement.Value));
+                Environment.SetValue(((ASTIdent)statement.Identifier).Value, translate(statement.Value));
             }
             return null;
         }
@@ -413,8 +437,8 @@ namespace Joe
             }
             else
             {
-                environment.AddValueWithType(((ASTIdent)statement.VarName).Value, ((ASTIdent)statement.VarType).Value);
-                environment.SetValue(((ASTIdent)statement.VarName).Value, translate(statement.Value));
+                Environment.AddValueWithType(((ASTIdent)statement.VarName).Value, ((ASTIdent)statement.VarType).Value);
+                Environment.SetValue(((ASTIdent)statement.VarName).Value, translate(statement.Value));
                 return null;
             }
         }
@@ -423,33 +447,39 @@ namespace Joe
         {
             var objectName = ((ASTIdent)statement.VarName).Value;
             var className = ((ASTObjectDec)statement.Value).ClassName.Value;
-            ASTClassDefList classDec = (ASTClassDefList)this.environment.GetValue(className);
+            ASTClassDefList classDec = (ASTClassDefList)this.Environment.GetValue(className);
+            ObjectEntry objectEntry = new ObjectEntry(objectName);
             while (classDec != null && classDec.Statement != null)
             {
                 if (classDec.Statement.GetType() == typeof(ASTFunctionDef))
                 {
                     var functionDef = (ASTFunctionDef)classDec.Statement;
-                    var fullName = objectName + "." + functionDef.Identifier.Value;
-                    this.environment.AddValueWithType(fullName, "func");
-                    this.environment.SetValue(fullName, functionDef);
+                    MethodSignature ms = new MethodSignature(functionDef);
+                    var fullName = ms.ToString(); 
+                    objectEntry.Add(fullName, null);
+                    objectEntry[fullName] = new Entry { Value = functionDef, Type = ((ASTIdent)functionDef.Type).Value };
                 }
                 else if (classDec.Statement.GetType() == typeof(ASTVarDef))
                 {
-                    var varDef = (ASTVarDef)classDec.Statement;
-                    var fullName = objectName + "." + ((ASTIdent)varDef.VarName).Value;
-                    this.environment.AddValueWithType(fullName, ((ASTIdent)varDef.VarType).Value);
-                    this.environment.SetValue(fullName, translate(varDef.Value));
+                    ASTVarDef varDef = (ASTVarDef)classDec.Statement;
+                    var k = ((ASTIdent)varDef.VarName).Value;
+                    objectEntry.Add(k, null);
+                    objectEntry[k] = new Entry { Value = translate(varDef.Value), Type = ((ASTIdent)varDef.VarType).Value };
+                    //this.environment.AddValueWithType(fullName, ((ASTIdent)varDef.VarType).Value);
+                    //this.environment.SetValue(fullName, translate(varDef.Value));
                 }
                 classDec = classDec.List;
             }
+            this.Environment.AddValueWithType(objectName, className);
+            this.Environment.SetValue(objectName, objectEntry);
             return null;
         }
 
         private object transFuncDef(ASTFunctionDef statement)
         {
             MethodSignature signature = new MethodSignature(statement);
-            environment.AddValueWithType(signature.ToString(), "func");
-            environment.SetValue(signature.ToString(), statement);
+            Environment.AddValueWithType(signature.ToString(), "func");
+            Environment.SetValue(signature.ToString(), statement);
             return null;
         }
 
@@ -526,7 +556,12 @@ namespace Joe
                     }
                     else throw new Exception();
                 }
-                throw new MismatchedTypesException();
+                else if (translatedOp1.GetType() == typeof(string))
+                {
+                    //String casting
+                    return translatedOp1.ToString() + translatedOp2.ToString();
+                }
+                    throw new MismatchedTypesException();
             }
 
             throw new MismatchedTypesException();

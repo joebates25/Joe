@@ -37,6 +37,7 @@ namespace Joe
             var argsList = (ASTArgsList)function.ArgumentList;
             while (argsList != null)
             {
+                
                 if (argsList.Identifier.GetType() == typeof(ASTIdent))
                 {
                     argTypes.Add(e.GetEntry(((ASTIdent)argsList.Identifier).Value).Type);
