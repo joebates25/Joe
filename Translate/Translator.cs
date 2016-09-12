@@ -9,8 +9,8 @@ namespace Joe
         public Environment Environment;
         public ASTNode CurrentStatement { get; set; }
 
-        List<String> BUILT_IN_FUNCTIONS = new List<String> { "print", "tostring", "input", "pinput", "toint", "len", "memdump" };
-        List<String> BUILT_IN_TYPES = new List<string> { "int", "float", "string", "func", "arr", "null", "set" };
+        List<String> BUILT_IN_FUNCTIONS = new List<String> { "print", "tostring", "input", "pinput", "toint", "len", "memdump", "set" };
+        List<String> BUILT_IN_TYPES = new List<string> { "int", "float", "string", "func", "arr", "null" };
 
         public Translator(ASTStatementList tree)
         {
@@ -352,7 +352,21 @@ namespace Joe
                 }
                 return Console.ReadLine();
             }
-            return null;
+            else if (identifer.Equals("set"))
+            {
+                ASTArgsList defArgs = (ASTArgsList)statement.ArgumentList;
+                var variableIDent = ((ASTIdent)defArgs.Identifier).Value;
+                ObjectEntry objectIdent = (ObjectEntry)translate(defArgs.Identifier);
+                defArgs = defArgs.Argslist;
+                var propertyIdent = ((ASTIdent)defArgs.Identifier).Value;
+                defArgs = defArgs.Argslist;
+                var valueIdent = translate(defArgs.Identifier);
+                objectIdent[propertyIdent] = new Entry { Value = valueIdent, Type="NEEDTYPE"};
+                this.Environment.SetValue(variableIDent, objectIdent);
+                return null;
+
+            }
+                return null;
         }
 
         private bool isBuiltInFunction(ASTFunctionCall statement)

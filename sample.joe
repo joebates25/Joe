@@ -1,6 +1,11 @@
-class Dog{
+class Animal{
+	let name:string = "ZooAnimal";
+}
+
+class Dog:Animal{
     let age:int = 3;
 	let calls:int = 0;
+
 
 
 	func bark:null(){
@@ -14,6 +19,15 @@ class Dog{
 		END
 	}
 
+	func newDog:Dog(){
+	@
+		Add ability to use "new [classname]" as expression
+	@
+		
+		let theNewDog:Dog = new Dog;
+		ret theNewDog;
+	}
+
 	
 	func command:int(command:string, **result:int){
 		IF command == "sit" THEN
@@ -23,13 +37,21 @@ class Dog{
 		END
 	}	
 	
-
 }
 
 let pet:Dog = new Dog;
+set(pet, age, 10);
+
+let pet2:Dog = pet.newDog();
+
 
 print("Age before: " + pet.age);
-pet.set("age", 10);
+func hello:null(){
+	print("Hello World");
+}
+set(pet, age, 100);
+set(pet, bark, hello);
+pet.bark();
 print("Age after: " + pet.age);
 
 pet.bark();
@@ -40,20 +62,3 @@ print(pet.calls);
 
 let commands:arr = ["run", "sit", "stand"];
 let index:int = len(commands);
-
-LOOP index != 0 BEGIN
-	let cmd:string = pinput("Enter a command: ");
-	let res:int = 100;
-	pet.command(cmd, res);
-	print(res);
-	asn index = index - 1;
-END
-
-@
-func hello:null(){
-	let dd:Dog = new Dog;
-    ret dd;
-}
-
-print(hello().y);
-@

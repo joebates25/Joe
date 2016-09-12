@@ -43,8 +43,7 @@ namespace Joe
                 Translator = new Translator(tree);
                 Translator.Translate();
             }
-
-            ; Console.WriteLine("Done Processing.................");
+            Console.WriteLine("Done Processing.................");
             Console.ReadLine();
         }
     }
