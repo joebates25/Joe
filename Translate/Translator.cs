@@ -9,7 +9,7 @@ namespace Joe
         public Environment Environment;
         public ASTNode CurrentStatement { get; set; }
 
-        List<String> BUILT_IN_FUNCTIONS = new List<String> { "print", "tostring", "input", "pinput", "toint", "len", "memdump", "set" };
+        List<String> BUILT_IN_FUNCTIONS = new List<String> { "print", "tostring", "input", "pinput", "toint", "len", "memdump", "set", "inc", "dec" };
         List<String> BUILT_IN_TYPES = new List<string> { "int", "float", "string", "func", "arr", "null" };
 
         public Translator(ASTStatementList tree)
@@ -48,6 +48,10 @@ namespace Joe
             else if (statement.GetType() == typeof(ASTBinOP))
             {
                 return transBinOp((ASTBinOP)statement);
+            }
+            else if (statement.GetType() == typeof(ASTUnaryOp))
+            {
+                return transUnaryOp((ASTUnaryOp)statement);
             }
             else if (statement.GetType() == typeof(ASTString))
             {
@@ -113,6 +117,62 @@ namespace Joe
             {
                 return null;
             }
+        }
+
+        private object transUnaryOp(ASTUnaryOp statement)
+        {
+            var op = (ASTOpExp)statement.Operator;
+            if (op.Operator.Equals("++"))
+            {
+                var translatedValue = translate(statement.Identifier);
+                if (translatedValue.GetType() == typeof(int))
+                {
+                    return (int)translatedValue + 1;
+                }
+                else if (translatedValue.GetType() == typeof(float))
+                {
+                    return (int)translatedValue + 1;
+                }
+                else
+                {
+                    throw new InvalidTypeException();
+                }
+            }
+            else if (op.Operator.Equals("--"))
+            {
+                var translatedValue = translate(statement.Identifier);
+                if (translatedValue.GetType() == typeof(int))
+                {
+                    return (int)translatedValue - 1;
+                }
+                else if (translatedValue.GetType() == typeof(float))
+                {
+                    return (float)translatedValue - 1;
+                }
+                else
+                {
+                    throw new InvalidTypeException();
+                }
+            }
+            else if (op.Operator.Equals("-"))
+            {
+                var translatedValue = translate(statement.Identifier);
+                if (translatedValue.GetType() == typeof(int))
+                {
+                    return (int)translatedValue * -1;
+                }
+                else if (translatedValue.GetType() == typeof(float))
+                {
+                    return (float)translatedValue * -1;
+                }
+                else
+                {
+                    throw new InvalidTypeException();
+                }
+            }        
+
+            else
+                throw new NotImplementedException();
         }
 
         private object transComposite(ASTNode statement)

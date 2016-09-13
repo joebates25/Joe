@@ -44,7 +44,9 @@ namespace Joe
 
     public class ASTUnaryOp : ASTNode
     {
+          public ASTNode Operator { get; set; }
 
+          public ASTNode Identifier { get; set; }
     }
 
     public class ASTBool: ASTNode
@@ -100,8 +102,7 @@ namespace Joe
     }
 
     public class ASTOpExp : ASTNode
-    {
-
+    {                                            
         public String Operator { get; set; }
     }
 

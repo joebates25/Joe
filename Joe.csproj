@@ -102,6 +102,7 @@
     <Compile Include="Exceptions\CharacterUnknownException.cs" />
     <Compile Include="Translate\Environment.cs" />
     <Compile Include="Lexer\Lexer.cs" />
+    <Compile Include="Translate\InvalidTypeException.cs" />
     <Compile Include="Translate\MethodSignature.cs" />
     <Compile Include="Exceptions\MismatchedTypesException.cs" />
     <Compile Include="Exceptions\ParseException.cs" />

@@ -1,4 +1,4 @@
-class --Animal{
+class Animal{
 	let name:string = "ZooAnimal";
 	let calls:int = 0;
 
@@ -48,7 +48,7 @@ class Dog:Animal{
 	}	
 	
 }
-
+@
 let ani:Animal = new Animal;
 let pet1:Dog = new Dog;
 pet1.bark();
@@ -59,3 +59,7 @@ print(pet1.calls);
 
 let pet:Dog = new Dog;
 set(pet, age, 10);
+@
+
+let x:int = -4;
+print(x);

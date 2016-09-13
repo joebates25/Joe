@@ -366,6 +366,15 @@ namespace Joe
                 var node2 = parseExp();
                 return new ASTCompOp { Op1 = node1, OP2 = node2, Operator = operand };
             }
+            else if (tokenStream.Current.Type == TokenType.INC || tokenStream.Current.Type == TokenType.DEC || tokenStream.Current.Type == TokenType.MINUS)
+            {
+                var operand = parseOp();
+                var node2 = parseExpression();
+                var uNode = new ASTUnaryOp();
+                uNode.Operator = operand;
+                uNode.Identifier = node2;
+                return uNode;
+            }
             else
             {
                 var node = parseExp();
@@ -465,6 +474,15 @@ namespace Joe
             {
                 node.Operator = "^";
             }
+            else if (tokenStream.Current.Type == TokenType.INC)
+            {
+                node.Operator = "++";
+            }
+            else if (tokenStream.Current.Type == TokenType.DEC)
+            {
+                node.Operator = "--";
+            }
+            
             tokenStream.NextToken();
             return node;
         }
