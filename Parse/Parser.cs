@@ -98,6 +98,12 @@ namespace Joe
             var identToken = tokenStream.Current;
             classNode.Identifier = new ASTIdent(identToken.Value);
             tokenStream.NextToken(); //past ident
+            if (tokenStream.Current.Type == TokenType.COLON)
+            {
+                tokenStream.NextToken();
+                classNode.SuperClass = new ASTIdent(tokenStream.Current.Value);
+                tokenStream.NextToken();
+            }
             tokenStream.NextToken(); //past {
             classNode.Items = parseClassItemsList();
             tokenStream.NextToken();

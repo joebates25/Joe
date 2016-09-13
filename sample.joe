@@ -1,10 +1,24 @@
-class Animal{
+class --Animal{
 	let name:string = "ZooAnimal";
+	let calls:int = 0;
+
+	func bark:null(){
+		print("Animal Sound!");
+		asn calls = calls + 1;
+	}
+
+	func bark:null(num:int=1){
+		LOOP num > 0 BEGIN
+			bark();
+			asn num = num - 1;
+		END
+	}
+
 }
 
 class Dog:Animal{
     let age:int = 3;
-	let calls:int = 0;
+	let name:string = "DogAnimal";
 
 
 
@@ -13,11 +27,7 @@ class Dog:Animal{
 		asn calls = calls + 1;
 	}
 	
-	func set:null (prop:string, val:int){
-		IF prop == "age" THEN
-			asn age = val;
-		END
-	}
+	
 
 	func newDog:Dog(){
 	@
@@ -39,26 +49,13 @@ class Dog:Animal{
 	
 }
 
+let ani:Animal = new Animal;
+let pet1:Dog = new Dog;
+pet1.bark();
+
+ani.bark();
+pet1.bark(3);
+print(pet1.calls);
+
 let pet:Dog = new Dog;
 set(pet, age, 10);
-
-let pet2:Dog = pet.newDog();
-
-
-print("Age before: " + pet.age);
-func hello:null(){
-	print("Hello World");
-}
-set(pet, age, 100);
-set(pet, bark, hello);
-pet.bark();
-print("Age after: " + pet.age);
-
-pet.bark();
-pet.bark();
-pet.bark();
-
-print(pet.calls);
-
-let commands:arr = ["run", "sit", "stand"];
-let index:int = len(commands);

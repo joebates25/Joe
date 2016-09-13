@@ -12,17 +12,17 @@ namespace Joe
     class Lexer
     {
 
-        
+
 
         public int LineNumber = 1;
         public Lexer()
         {
-            
+
         }
 
         public List<Token> LexString(String filename)
         {
-            byte[] byteArray = Encoding.UTF8.GetBytes(filename);    
+            byte[] byteArray = Encoding.UTF8.GetBytes(filename);
             return Lex(new StreamReader(new MemoryStream(byteArray)));
         }
 
@@ -37,7 +37,7 @@ namespace Joe
             List<Token> tokens = new List<Token>();
             var fileStream = stream;
             using (fileStream)
-            {  
+            {
                 LineNumber = 1;
 
                 char currentChar;
@@ -140,13 +140,29 @@ namespace Joe
                     }
                     else if (((char)currentChar).Equals('+'))
                     {
-                        tokens.Add(new Token("+", TokenType.PLUS, LineNumber));
                         advanceStream(fileStream);
+                        if (fileStream.Peek() == '+')
+                        {
+                            advanceStream(fileStream);
+                            tokens.Add(new Token("++", TokenType.INC, LineNumber));
+                        }
+                        else
+                        {
+                            tokens.Add(new Token("+", TokenType.PLUS, LineNumber));
+                        }
                     }
                     else if (((char)currentChar).Equals('-'))
                     {
-                        tokens.Add(new Token("-", TokenType.MINUS, LineNumber));
                         advanceStream(fileStream);
+                        if (fileStream.Peek() == '-')
+                        {
+                            advanceStream(fileStream);
+                            tokens.Add(new Token("--", TokenType.DEC, LineNumber));
+                        }
+                        else
+                        {
+                            tokens.Add(new Token("-", TokenType.MINUS, LineNumber));
+                        }
                     }
                     else if (((char)currentChar).Equals('*'))
                     {

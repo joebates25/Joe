@@ -129,6 +129,8 @@ namespace Joe
         FLOAT,
         DOT,
         CLASS,
-        NEW
+        NEW,
+        INC,
+        DEC
     }
 }

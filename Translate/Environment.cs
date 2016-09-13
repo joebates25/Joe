@@ -346,5 +346,7 @@ namespace Joe
             Type = type;
         }
         public string Type {get;set;}
+
+        
     }
 }

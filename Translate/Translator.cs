@@ -132,7 +132,7 @@ namespace Joe
             var newEntry = new ObjectEntry(firstObject.Type);
             foreach (var nextKey in firstObject.Keys)
             {
-                newEntry[nextKey] = new Entry { Type = ((Entry)firstObject[nextKey]).Type, Value = this.Environment.GetValue(nextKey)};
+                newEntry[nextKey] = new Entry { Type = ((Entry)firstObject[nextKey]).Type, Value = this.Environment.GetValue(nextKey) };
             }
             this.Environment.SetValue(firstObject.Type, newEntry);
             this.Environment = this.Environment.EnclosingEnvironment;
@@ -142,7 +142,7 @@ namespace Joe
         private object transClassDef(ASTClassDef statement)
         {
             this.Environment.AddValueWithType(statement.Identifier.Value, "class");
-            this.Environment.SetValue(statement.Identifier.Value, statement.Items);
+            this.Environment.SetValue(statement.Identifier.Value, statement);
             return 0;
         }
 
@@ -361,12 +361,12 @@ namespace Joe
                 var propertyIdent = ((ASTIdent)defArgs.Identifier).Value;
                 defArgs = defArgs.Argslist;
                 var valueIdent = translate(defArgs.Identifier);
-                objectIdent[propertyIdent] = new Entry { Value = valueIdent, Type="NEEDTYPE"};
+                objectIdent[propertyIdent] = new Entry { Value = valueIdent, Type = "NEEDTYPE" };
                 this.Environment.SetValue(variableIDent, objectIdent);
                 return null;
 
             }
-                return null;
+            return null;
         }
 
         private bool isBuiltInFunction(ASTFunctionCall statement)
@@ -461,32 +461,61 @@ namespace Joe
         {
             var objectName = ((ASTIdent)statement.VarName).Value;
             var className = ((ASTObjectDec)statement.Value).ClassName.Value;
-            ASTClassDefList classDec = (ASTClassDefList)this.Environment.GetValue(className);
+            var superclass = "";
+            ASTClassDef classDec = (ASTClassDef)this.Environment.GetValue(className);
+            /*
+             * Add class members to object
+             */
             ObjectEntry objectEntry = new ObjectEntry(objectName);
-            while (classDec != null && classDec.Statement != null)
-            {
-                if (classDec.Statement.GetType() == typeof(ASTFunctionDef))
-                {
-                    var functionDef = (ASTFunctionDef)classDec.Statement;
-                    MethodSignature ms = new MethodSignature(functionDef);
-                    var fullName = ms.ToString(); 
-                    objectEntry.Add(fullName, null);
-                    objectEntry[fullName] = new Entry { Value = functionDef, Type = ((ASTIdent)functionDef.Type).Value };
-                }
-                else if (classDec.Statement.GetType() == typeof(ASTVarDef))
-                {
-                    ASTVarDef varDef = (ASTVarDef)classDec.Statement;
-                    var k = ((ASTIdent)varDef.VarName).Value;
-                    objectEntry.Add(k, null);
-                    objectEntry[k] = new Entry { Value = translate(varDef.Value), Type = ((ASTIdent)varDef.VarType).Value };
-                    //this.environment.AddValueWithType(fullName, ((ASTIdent)varDef.VarType).Value);
-                    //this.environment.SetValue(fullName, translate(varDef.Value));
-                }
-                classDec = classDec.List;
-            }
+            AddClassMembersToObject(objectEntry, classDec);
+
+            //Add object to environment
             this.Environment.AddValueWithType(objectName, className);
             this.Environment.SetValue(objectName, objectEntry);
             return null;
+        }
+
+        private ObjectEntry AddClassMembersToObject(ObjectEntry objectEntry, ASTClassDef classDec)
+        {
+            if (classDec.SuperClass != null)
+            {
+                objectEntry = AddClassMembersToObject(objectEntry, (ASTClassDef)this.Environment.GetValue(((ASTIdent)classDec.SuperClass).Value)); 
+            }
+            ASTClassDefList statementList = classDec.Items;
+            while (statementList != null && statementList.Statement != null)
+            {
+                if (statementList.Statement.GetType() == typeof(ASTFunctionDef))
+                {
+                    var functionDef = (ASTFunctionDef)statementList.Statement;
+                    MethodSignature ms = new MethodSignature(functionDef);
+                    var fullName = ms.ToString();
+                    if (objectEntry.ContainsKey(fullName))
+                    {
+                        objectEntry[fullName] = new Entry { Value = functionDef, Type = ((ASTIdent)functionDef.Type).Value };
+                    }
+                    else
+                    {
+                        objectEntry.Add(fullName, new Entry { Value = functionDef, Type = ((ASTIdent)functionDef.Type).Value });
+                    }
+
+                }
+                else if (statementList.Statement.GetType() == typeof(ASTVarDef))
+                {
+                    ASTVarDef varDef = (ASTVarDef)statementList.Statement;
+                    var fullName = ((ASTIdent)varDef.VarName).Value;
+                    if (objectEntry.ContainsKey(fullName))
+                    {
+                        objectEntry[fullName] = new Entry { Value = translate(varDef.Value), Type = ((ASTIdent)varDef.VarType).Value };
+                    }
+                    else
+                    {
+                        objectEntry.Add(fullName, new Entry { Value = translate(varDef.Value), Type = ((ASTIdent)varDef.VarType).Value });
+                    }
+                }
+                statementList = statementList.List;
+            }
+
+            return objectEntry;
         }
 
         private object transFuncDef(ASTFunctionDef statement)
@@ -575,7 +604,7 @@ namespace Joe
                     //String casting
                     return translatedOp1.ToString() + translatedOp2.ToString();
                 }
-                    throw new MismatchedTypesException();
+                throw new MismatchedTypesException();
             }
 
             throw new MismatchedTypesException();

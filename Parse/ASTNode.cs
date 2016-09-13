@@ -42,6 +42,11 @@ namespace Joe
         public ASTLoopBody FunctionBody { get; set; }
     }
 
+    public class ASTUnaryOp : ASTNode
+    {
+
+    }
+
     public class ASTBool: ASTNode
     {
         public ASTBool(Boolean value)
@@ -74,6 +79,7 @@ namespace Joe
 
         public ASTIdent Identifier { get; set; }
         public ASTClassDefList Items { get; set; }
+        public object SuperClass { get; internal set; }
     }
 
     public class ASTObjectDec: ASTNode
